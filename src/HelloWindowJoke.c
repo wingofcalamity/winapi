@@ -1,12 +1,20 @@
 #include <windows.h>
 #include <wchar.h>
 
+#include <stdlib.h>
+
 // pragma to save effort on the linker
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "kernel32.lib")
 #pragma comment(lib, "gdi32.lib")
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+
+int GLOBAL_COUNTER = 0;
+
+int getRandom(int max) {
+  return rand() % (max + 1);
+};
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR szCmdLine, int iCmdShow) {
   wchar_t szAppName[36];
@@ -30,7 +38,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR szCmdLine,
   wndclass.lpszClassName = szAppName;
 
   if(!RegisterClass(&wndclass)) {
-    MessageBox(NULL, TEXT("Error creating Window."), szAppName, MB_ICONERROR | MB_OK);
+    MessageBox(NULL, TEXT("Error creating Window"), szAppName, MB_ICONERROR | MB_OK);
     return 1;
   }
 
@@ -76,12 +84,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
       break;
 
     case WM_CLOSE:
-      int choice = MessageBox(hwnd,L"Do you want to close?", L"Close?", MB_ICONWARNING | MB_OKCANCEL);
-      if(choice == IDOK) {
+      // int choice = MessageBox(hwnd,L"Do you want to close?", L"Close?", MB_ICONWARNING | MB_OKCANCEL);
+
+      // enshittification
+      int choice = 0;
+      RECT window;
+      GetClientRect(hwnd, &window);
+      MessageBeep(0);
+      int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+      int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+      int width = window.right - window.left;
+      int height = window.bottom - window.top;
+      SetWindowPos(hwnd, HWND_TOPMOST, getRandom(screenWidth-width), getRandom(screenHeight-height), 0, 0, SWP_NOSIZE);
+      GLOBAL_COUNTER++;
+      // endshittification
+
+      if(choice == IDOK | GLOBAL_COUNTER == 10) {
         PostQuitMessage(0);
       }
-      return 0;
       
+      return 0;
     case WM_DESTROY:
       PostQuitMessage(0);
       return 0;
